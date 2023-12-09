@@ -1,5 +1,5 @@
 {
-  "name": "@arcaptcha/cloud-security-nodejs",
+  "name": "arcaptcha-cloud-security-nodejs",
   "version": "0.1.0",
   "description": "ARCaptcha Cloud Security module for Node.js applications",
   "main": "arcaptcha.js",
