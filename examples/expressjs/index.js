@@ -1,9 +1,13 @@
 const ARCaptcha = require("../../arcaptcha");
 
+
 const express = require("express");
 const app = express();
+const isInProd = process.env.NODE_ENV === 'production';
 
-const arcaptchaClient = new ARCaptcha("arefkharegavemane", "127.0.0.1", { ssl: false, port: 8010 });
+const config = require(`./config.${isInProd ? 'prodution' : 'development'}.json`);
+
+const arcaptchaClient = new ARCaptcha(config.key, config.api, config.options);
 
 app.use(function (req, resp, next) {
     arcaptchaClient.authCallback(
