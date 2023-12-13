@@ -24,6 +24,7 @@ app.use(function (req, resp, next) {
 });
 
 app.get("/", function (req, res) {
+    console.log(req.socket.remoteAddress);
     res.send("Hello World");
 });
 
