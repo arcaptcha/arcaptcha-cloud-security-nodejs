@@ -5,7 +5,7 @@ const express = require("express");
 const app = express();
 const isInProd = process.env.NODE_ENV === 'production';
 
-const config = require(`./config.${isInProd ? 'prodution' : 'development'}.json`);
+const config = require(`./config.${isInProd ? 'production' : 'development'}.json`);
 
 const arcaptchaClient = new ARCaptcha(config.key, config.api, config.options);
 
