@@ -1,0 +1,8 @@
+{
+    "key": "arefkharegavemane",
+    "api": "127.0.0.1",
+    "options": {
+        "ssl": false,
+        "port": 8010
+    }
+}

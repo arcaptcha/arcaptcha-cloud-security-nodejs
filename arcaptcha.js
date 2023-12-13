@@ -11,7 +11,7 @@ const { moduleName, moduleVersion } = require('./lib/metadata.js');
 const defaultParams = {
     ssl: true,
     port: 443,
-    path: '/validate-request/',
+    path: '/v1/roz/inspect',
     timeout: 150,
     uriRegex: null,
     uriRegexExclusion:
@@ -92,7 +92,7 @@ module.exports = class ARCaptchaClient extends EventEmitter {
 
         const requestData = {
             Key: this.apiKey,
-            RequestMo   uleName: moduleName,
+            RequestMouleName: moduleName,
             ModuleVersion: moduleVersion,
             ServerName: truncateHeaderToSize(this.hostname, 512),
             APIConnectionState: 'new',
@@ -218,17 +218,6 @@ module.exports = class ARCaptchaClient extends EventEmitter {
                         return;
                     }
                     finished = true;
-
-                    if (
-                        apiResp.headers['x-arcaptcharesponse'] !=
-                        apiResp.statusCode
-                    ) {
-                        logger.error(
-                            'ARCaptcha: Invalid X-ARCaptchaResponse header, is it ApiServer response?'
-                        );
-                        validCallback();
-                        return;
-                    }
 
                     // Gather 'x-arcaptcha-request-headers' into an object to pass information outside of the middleware
                     const ddRequestHeaders = getARCaptchaRequestHeaders(apiResp);

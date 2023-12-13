@@ -111,8 +111,9 @@ This module provides two events:
 
 You can also customize the behavior of the module by adding an object as a third argument with parameters:
 
-| Option    | Default value | Description                                 |
-| --------- | ------------- | ------------------------------------------- |
-| `ssl`     | `true`        | Does the module use HTTPS                   |
-| `port`    | `443`         | The port to connect on the APIServer        |
-| `timeout` | `150`         | The endpoint on the APIServer (miliseconds) |
+| Option    | Default value     | Description                                 |
+| --------- | ----------------- | ------------------------------------------- |
+| `ssl`     | `true`            | Does the module use HTTPS                   |
+| `port`    | `443`             | The port to connect on the APIServer        |
+| `path`    | `/v1/roz/inspect` | The endpoint on the APIServer               |
+| `timeout` | `150`             | The endpoint on the APIServer (miliseconds) |

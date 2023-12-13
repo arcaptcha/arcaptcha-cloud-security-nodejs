@@ -1,6 +1,6 @@
 {
   "name": "arcaptcha-cloud-security-nodejs",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "ARCaptcha Cloud Security module for Node.js applications",
   "main": "arcaptcha.js",
   "scripts": {
@@ -33,7 +33,7 @@
     "c8": "^7.11.0",
     "cheerio": "^1.0.0-rc.12",
     "eslint": "^8.26.0",
-    "express": "^4.17.3",
+    "express": "^4.18.2",
     "nock": "^13.2.4",
     "node-fetch": "^2.6.7",
     "prettier": "^2.6.1",
