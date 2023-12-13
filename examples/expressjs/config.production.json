@@ -1,5 +1,5 @@
 {
-    "key": "aref_site",
-    "api": "https://roz.arcaptcha.co",
+    "key": "aref_secret",
+    "api": "roz.arcaptcha.co",
     "options": {}
 }
