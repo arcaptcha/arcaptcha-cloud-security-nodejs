@@ -24,7 +24,7 @@ const defaultParams = {
  * @property {string} nonce - Nonce to be injected to the HTML body of block responses returned by the module.
  */
 
-module.exports = class ARCaptchaClient extends EventEmitter {
+module.exports = class ARmigateClient extends EventEmitter {
     constructor(apiKey, endPoint, params = {}) {
         super();
         this.apiKey = apiKey;
@@ -65,7 +65,7 @@ module.exports = class ARCaptchaClient extends EventEmitter {
      * @param {IncomingMessage} req - The request object.
      * @param {ServerResponse} resp - The response object.
      * @param {function(): void} validCallback - The callback function to invoke when the request is valid.
-     * @param {function(object.<string, string>): void} blockCallback - The callback function to invoke when the request is blocked. Takes a dictionary containing enriched headers returned by the ARCaptcha API.
+     * @param {function(object.<string, string>): void} blockCallback - The callback function to invoke when the request is blocked. Takes a dictionary containing enriched headers returned by the ARmigate API.
      * @param {Params} params - Additional parameters.
      */
     authCallback(req, resp, validCallback, blockCallback, params = {}) {
@@ -86,9 +86,11 @@ module.exports = class ARCaptchaClient extends EventEmitter {
             }
         }
 
+        console.log(req.body);
+
         const clientIdAndCookiesLength = getClientIdAndCookiesLength(req);
         const hasClientIdHeader =
-            typeof req.headers['x-arcaptcha-clientid'] !== 'undefined';
+            typeof req.headers['x-armigate-clientid'] !== 'undefined';
 
         const requestData = {
             Key: this.apiKey,
@@ -147,7 +149,7 @@ module.exports = class ARCaptchaClient extends EventEmitter {
             AuthorizationLen: getAuthorizationLength(req),
             PostParamLen: req.headers['content-length'],
             ClientID: hasClientIdHeader
-                ? truncateHeaderToSize(req.headers['x-arcaptcha-clientid'], 128)
+                ? truncateHeaderToSize(req.headers['x-armigate-clientid'], 128)
                 : truncateHeaderToSize(clientIdAndCookiesLength.clientId, 128),
             SecCHUA: truncateHeaderToSize(req.headers['sec-ch-ua'], 128),
             SecCHUAArch: truncateHeaderToSize(
@@ -181,7 +183,7 @@ module.exports = class ARCaptchaClient extends EventEmitter {
         const requestOptions = hasClientIdHeader
             ? Object.assign({}, this.options, {
                 headers: Object.assign(
-                    { 'X-ARCaptcha-X-Set-Cookie': 'true' },
+                    { 'X-ARmigate-X-Set-Cookie': 'true' },
                     this.options.headers
                 ),
             })
@@ -207,7 +209,7 @@ module.exports = class ARCaptchaClient extends EventEmitter {
                     finished = true;
 
                     logger.error(
-                        'ARCaptcha: Error retrieving the response from arcaptcha, request skipped'
+                        'ARmigate: Error retrieving the response from armigate, request skipped'
                     );
                     validCallback();
                     return;
@@ -219,15 +221,15 @@ module.exports = class ARCaptchaClient extends EventEmitter {
                     }
                     finished = true;
 
-                    // Gather 'x-arcaptcha-request-headers' into an object to pass information outside of the middleware
-                    const ddRequestHeaders = getARCaptchaRequestHeaders(apiResp);
+                    // Gather 'x-armigate-request-headers' into an object to pass information outside of the middleware
+                    const ddRequestHeaders = getARmigateRequestHeaders(apiResp);
 
                     switch (apiResp.statusCode) {
                         case 301:
                         case 302:
                         case 403:
                         case 401:
-                            executeARCaptchaHeaders(apiResp, resp);
+                            executeARmigateHeaders(apiResp, resp);
                             resp.statusCode = apiResp.statusCode;
                             if (params.nonce) {
                                 body = addNonceToResponseBody(
@@ -240,8 +242,8 @@ module.exports = class ARCaptchaClient extends EventEmitter {
                             return;
 
                         case 200:
-                            executeARCaptchaHeaders(apiResp, resp);
-                            executeARCaptchaRequestHeaders(apiResp, req);
+                            executeARmigateHeaders(apiResp, resp);
+                            executeARmigateRequestHeaders(apiResp, req);
                             validCallback(ddRequestHeaders);
                             return;
 
@@ -258,7 +260,7 @@ module.exports = class ARCaptchaClient extends EventEmitter {
                 finished = true;
 
                 logger.error(
-                    'ARCaptcha: Timeout happened with connection to arcaptcha, request skipped'
+                    'ARmigate: Timeout happened with connection to armigate, request skipped'
                 );
                 validCallback();
             })
@@ -269,7 +271,7 @@ module.exports = class ARCaptchaClient extends EventEmitter {
                 finished = true;
 
                 logger.error(
-                    'ARCaptcha: Error establishing the connection to arcaptcha, request skipped'
+                    'ARmigate: Error establishing the connection to armigate, request skipped'
                 );
                 validCallback();
             })
@@ -283,20 +285,20 @@ module.exports = class ARCaptchaClient extends EventEmitter {
      * @param {IncomingMessage} req - The request object.
      * @param {ServerResponse} resp - The response object.
      * @param {function(): void} validCallback - The callback function to invoke when the request is valid.
-     * @param {function(object.<string, string>): void} blockCallback - The callback function to invoke when the request is blocked. Takes a dictionary containing enriched headers returned by the ARCaptcha API.
+     * @param {function(object.<string, string>): void} blockCallback - The callback function to invoke when the request is blocked. Takes a dictionary containing enriched headers returned by the ARmigate API.
      * @param {Params} params - Additional parameters.
      */
     auth(req, resp, params) {
-        const arcaptchaAuthEvent = this;
+        const armigateAuthEvent = this;
 
         this.authCallback(
             req,
             resp,
             function (ddHeaders) {
-                arcaptchaAuthEvent.emit('valid', req, resp, ddHeaders);
+                armigateAuthEvent.emit('valid', req, resp, ddHeaders);
             },
             function (ddHeaders) {
-                arcaptchaAuthEvent.emit('blocked', req, ddHeaders);
+                armigateAuthEvent.emit('blocked', req, ddHeaders);
             },
             params
         );
@@ -360,7 +362,7 @@ function getClientIdAndCookiesLength(request) {
         Object.keys(parsed).forEach(function (name) {
             const value = parsed[name];
             cookiesLength += value.length;
-            if (name === 'arcaptcha') {
+            if (name === 'armigate') {
                 clientId = value;
             }
         });
@@ -372,44 +374,44 @@ function getClientIdAndCookiesLength(request) {
     };
 }
 
-function executeARCaptchaHeaders(req, resp) {
-    const arcaptchaHeadersStr = req.headers['x-arcaptcha-headers'];
-    if (arcaptchaHeadersStr === undefined) {
+function executeARmigateHeaders(req, resp) {
+    const armigateHeadersStr = req.headers['x-armigate-headers'];
+    if (armigateHeadersStr === undefined) {
         return;
     }
-    arcaptchaHeadersStr.split(' ').forEach(function (arcaptchaHeaderName) {
-        const arcaptchaHeaderValue =
-            req.headers[arcaptchaHeaderName.toLowerCase()];
-        if (arcaptchaHeaderValue === undefined) {
+    armigateHeadersStr.split(' ').forEach(function (armigateHeaderName) {
+        const armigateHeaderValue =
+            req.headers[armigateHeaderName.toLowerCase()];
+        if (armigateHeaderValue === undefined) {
             return;
         }
-        if (arcaptchaHeaderName == 'Set-Cookie') {
+        if (armigateHeaderName == 'Set-Cookie') {
             var headerValues = [];
-            if (resp.hasHeader(arcaptchaHeaderName)) {
-                headerValues = resp.getHeader(arcaptchaHeaderName);
+            if (resp.hasHeader(armigateHeaderName)) {
+                headerValues = resp.getHeader(armigateHeaderName);
             }
             resp.setHeader(
-                arcaptchaHeaderName,
-                [arcaptchaHeaderValue].concat(headerValues)
+                armigateHeaderName,
+                [armigateHeaderValue].concat(headerValues)
             );
         } else {
-            resp.setHeader(arcaptchaHeaderName, arcaptchaHeaderValue);
+            resp.setHeader(armigateHeaderName, armigateHeaderValue);
         }
     });
 }
 
-function executeARCaptchaRequestHeaders(apiReq, req) {
-    const arcaptchaHeadersStr = apiReq.headers['x-arcaptcha-request-headers'];
-    if (arcaptchaHeadersStr === undefined) {
+function executeARmigateRequestHeaders(apiReq, req) {
+    const armigateHeadersStr = apiReq.headers['x-armigate-request-headers'];
+    if (armigateHeadersStr === undefined) {
         return;
     }
-    arcaptchaHeadersStr.split(' ').forEach(function (name) {
-        const arcaptchaHeaderName = name.toLowerCase();
-        const arcaptchaHeaderValue = apiReq.headers[arcaptchaHeaderName];
-        if (arcaptchaHeaderValue === undefined) {
+    armigateHeadersStr.split(' ').forEach(function (name) {
+        const armigateHeaderName = name.toLowerCase();
+        const armigateHeaderValue = apiReq.headers[armigateHeaderName];
+        if (armigateHeaderValue === undefined) {
             return;
         }
-        req.headers[arcaptchaHeaderName] = arcaptchaHeaderValue;
+        req.headers[armigateHeaderName] = armigateHeaderValue;
     });
 }
 
@@ -417,10 +419,10 @@ function executeARCaptchaRequestHeaders(apiReq, req) {
  * Extract enriched headers for client requests
  *
  * @param { http.ServerResponse } apiResp
- * @return { object.<string, string> } Header names listed by the "x-arcaptcha-request-headers" response header and their values
+ * @return { object.<string, string> } Header names listed by the "x-armigate-request-headers" response header and their values
  */
-function getARCaptchaRequestHeaders(apiResp) {
-    const ddHeaders = apiResp.headers['x-arcaptcha-request-headers'];
+function getARmigateRequestHeaders(apiResp) {
+    const ddHeaders = apiResp.headers['x-armigate-request-headers'];
     if (ddHeaders === undefined) {
         return;
     }

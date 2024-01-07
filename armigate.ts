@@ -23,12 +23,12 @@ export interface Options {
 }
 
 export interface DDheaders {
-    'x-arcaptcha-isbot'?: string;
-    'x-arcaptcha-botname'?: string;
-    'x-arcaptcha-ruletype'?: string;
+    'x-armigate-isbot'?: string;
+    'x-armigate-botname'?: string;
+    'x-armigate-ruletype'?: string;
 }
 
-export default class ARCaptcha {
+export default class ARmigate {
     constructor(apiKey: string, url: string, options: Options);
 
     authCallback(

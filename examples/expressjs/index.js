@@ -1,16 +1,18 @@
-const ARCaptcha = require("../../arcaptcha");
+const ARmigate = require("../../armigate");
 
 
 const express = require("express");
 const app = express();
+app.use(express.json());
 const isInProd = process.env.NODE_ENV === 'production';
 
 const config = require(`./config.${isInProd ? 'production' : 'development'}.json`);
 
-const arcaptchaClient = new ARCaptcha(config.key, config.api, config.options);
+const ARmigateClient = new ARmigate(config.key, config.api, config.options);
 
 app.use(function (req, resp, next) {
-    arcaptchaClient.authCallback(
+    console.log(Object.keys(req));
+    ARmigateClient.authCallback(
         req,
         resp,
         function (data) {
@@ -23,7 +25,7 @@ app.use(function (req, resp, next) {
     );
 });
 
-app.get("/", function (req, res) {
+app.post("/", function (req, res) {
     console.log(req.socket.remoteAddress);
     res.send("Hello World");
 });

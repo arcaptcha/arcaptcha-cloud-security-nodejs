@@ -1,22 +1,22 @@
-# ARCaptcha Cloud Security Node.js Module
+# ARmigate Node.js Module
 
 This module is dedicated to be used inside the Node.js backend web-server.
 
-Before the regular Node.js HTTP process starts, it sends requests to the ARCaptcha server. Depending on the API response, the module either blocks the request or proceeds with the regular process.
+Before the regular Node.js HTTP process starts, it sends requests to the ARmigate server. Depending on the API response, the module either blocks the request or proceeds with the regular process.
 
 The module has been developed to protect the users' experience: if any errors were to occur during the process, or if the timeout is reached, the module will automatically disable its blocking process and allow the regular process to proceed.
 
 ## How to install and embed the module
 
-The module is distributed as a [npm package](https://www.npmjs.com/package/arcaptcha-cloud-security-nodejs). You can install it in your process and you will need to slightly modify the code.
+The module is distributed as a [npm package](https://www.npmjs.com/package/armigate-nodejs). You can install it in your process and you will need to slightly modify the code.
 
 The first step is to install it into an application (using npm) with the following command:
 
 ```shell
-npm i arcaptcha-cloud-security-nodejs
+npm i armigate-nodejs
 ```
 
-The next step is more complex and requires you to update your application to work over the ARCaptcha module.
+The next step is more complex and requires you to update your application to work over the ARmigate module.
 
 Below is an example with a simple HTTP server:
 
@@ -37,28 +37,28 @@ server.listen(port, hostname, () => {
 });
 ```
 
-To integrate ARCaptcha you need to make the following changes on this application:
+To integrate ARmigate you need to make the following changes on this application:
 
 ```javascript
-const ARCaptcha = require("arcaptcha-cloud-security-nodejs");
+const ARmigate = require("armigate-nodejs");
 const http = require("http");
 
 const hostname = "127.0.0.1";
 const port = 3000;
 
-const arcaptchaClient = new ARCaptcha("Some Key", "roz.arcaptcha.co")
+const armigate = new ARmigate("Some Key", "roz.arcaptcha.co")
   .on("blocked", function (req) {
-    console.log("ARCaptcha blocked this request");
+    console.log("ARmigate blocked this request");
   })
   .on("valid", function (req, res) {
-    console.log("ARCaptcha passed this request");
+    console.log("ARmigate passed this request");
     res.statusCode = 200;
     res.setHeader("Content-Type", "text/plain");
     res.end("Hello World\n");
   });
 
 const server = http.createServer((req, res) => {
-  arcaptchaClient.auth(req, res);
+  armigate.auth(req, res);
 });
 
 server.listen(port, hostname, () => {
@@ -73,15 +73,15 @@ The idea behind the changes above is moving the application logic into a valid e
 The module also supports integration through callbacks. Refer to the example below for an integration with `express`:
 
 ```javascript
-const ARCaptcha = require("arcaptcha-cloud-security-nodejs");
+const ARmigate = require("armigate-nodejs");
 
 const express = require("express");
 const app = express();
 
-const arcaptchaClient = new ARCaptcha("Some Key", "roz.arcaptcha.co");
+const armigateClient = new ARmigate("Some Key", "roz.arcaptcha.co");
 
 app.use(function (req, resp, next) {
-  arcaptchaClient.authCallback(
+  armigateClient.authCallback(
     req,
     resp,
     function () {

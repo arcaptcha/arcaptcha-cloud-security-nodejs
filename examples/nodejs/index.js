@@ -1,23 +1,23 @@
-const ARCaptcha = require("../../arcaptcha");
+const ARmigate = require("../../armigate");
 const http = require("http");
 
 const hostname = "127.0.0.1";
 const port = 3000;
 
-const arcaptchaClient = new ARCaptcha("arefkharegavemane", "127.0.0.1", { ssl: false, port: 8010 })
+const ARmigateClient = new ARmigate("arefkharegavemane", "127.0.0.1", { ssl: false, port: 8010 })
     .on("blocked", function (req) {
         console.log("blocked");
-        // console.log("ARCaptcha blocked this request");
+        // console.log("ARmigate blocked this request");
     })
     .on("valid", function (req, res) {
-        // console.log("ARCaptcha passed this request");
+        // console.log("ARmigate passed this request");
         res.statusCode = 200;
         res.setHeader("Content-Type", "text/plain");
         res.end("Hello World\n");
     });
 
 const server = http.createServer((req, res) => {
-    arcaptchaClient.auth(req, res);
+    ARmigateClient.auth(req, res);
 });
 
 server.listen(port, hostname, () => {
